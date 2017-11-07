@@ -13,8 +13,10 @@ from glob import glob
 
 """ param """
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('--dataset', dest='dataset', default='horse2zebra', help='which dataset to use')
-parser.add_argument('--crop_size', dest='crop_size', type=int, default=256, help='then crop to this size')
+parser.add_argument('--dataset', dest='dataset',
+                    default='horse2zebra', help='which dataset to use')
+parser.add_argument('--crop_size', dest='crop_size', type=int,
+                    default=256, help='then crop to this size')
 args = parser.parse_args()
 
 dataset = args.dataset
@@ -49,7 +51,8 @@ with tf.Session() as sess:
     for i in range(len(a_list)):
         a_real_ipt = im.imresize(im.imread(a_list[i]), [crop_size, crop_size])
         a_real_ipt.shape = 1, crop_size, crop_size, 3
-        a2b_opt, a2b2a_opt = sess.run([a2b, a2b2a], feed_dict={a_real: a_real_ipt})
+        a2b_opt, a2b2a_opt = sess.run(
+            [a2b, a2b2a], feed_dict={a_real: a_real_ipt})
         a_img_opt = np.concatenate((a_real_ipt, a2b_opt, a2b2a_opt), axis=0)
 
         img_name = os.path.basename(a_list[i])
@@ -59,7 +62,8 @@ with tf.Session() as sess:
     for i in range(len(b_list)):
         b_real_ipt = im.imresize(im.imread(b_list[i]), [crop_size, crop_size])
         b_real_ipt.shape = 1, crop_size, crop_size, 3
-        b2a_opt, b2a2b_opt = sess.run([b2a, b2a2b], feed_dict={b_real: b_real_ipt})
+        b2a_opt, b2a2b_opt = sess.run(
+            [b2a, b2a2b], feed_dict={b_real: b_real_ipt})
         b_img_opt = np.concatenate((b_real_ipt, b2a_opt, b2a2b_opt), axis=0)
 
         img_name = os.path.basename(b_list[i])

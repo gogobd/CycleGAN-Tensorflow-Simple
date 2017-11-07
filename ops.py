@@ -4,20 +4,29 @@ from __future__ import absolute_import
 
 import re
 import tensorflow as tf
+import tensorflow.contrib.slim as slim
 
 
-""" ops """
-
-
+# ops
 def leak_relu(x, leak, scope=None):
     with tf.name_scope(scope, 'leak_relu', [x, leak]):
         y = tf.maximum(x, leak * x)
         return y
 
 
-""" loss """
+def instance_norm(input_, scope="instance_norm"):
+    with tf.variable_scope(scope):
+        depth = input_.get_shape()[3]
+        scale = tf.get_variable("scale", [depth], initializer=tf.random_normal_initializer(1.0, 0.02, dtype=tf.float32))
+        offset = tf.get_variable("offset", [depth], initializer=tf.constant_initializer(0.0))
+        mean, variance = tf.nn.moments(input_, axes=[1, 2], keep_dims=True)
+        epsilon = 1e-5
+        inv = tf.rsqrt(variance + epsilon)
+        normalized = (input_ - mean) * inv
+        return scale*normalized + offset
 
 
+# loss
 def l2_loss(a, b, weights=1.0, scope=None):
     with tf.name_scope(scope, 'l2_loss', [a, b, weights]):
         loss = tf.reduce_mean((a - b) ** 2) * weights
@@ -29,10 +38,7 @@ def l1_loss(a, b, weights=1.0, scope=None):
         loss = tf.reduce_mean(tf.abs(a - b)) * weights
         return loss
 
-
-""" summary """
-
-
+# summary
 def summary(tensor, summary_type=['mean', 'stddev', 'max', 'min', 'sparsity', 'histogram']):
     """ Attach a lot of summaries to a Tensor. """
 
@@ -72,9 +78,7 @@ def summary_tensors(tensors, summary_type=['mean', 'stddev', 'max', 'min', 'spar
         return tf.summary.merge(summaries)
 
 
-""" others """
-
-
+# others
 def counter(scope='counter'):
     with tf.variable_scope(scope):
         counter = tf.Variable(0, dtype=tf.int32, name='counter')
